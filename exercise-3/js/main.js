@@ -1,22 +1,33 @@
 /* Create a barchart of drinking patterns*/
-$(function() {
+$(function () {
     // Read in prepped_data file
-    d3.csv('data/prepped_data.csv', function(error, allData) {
+    d3.csv('data/prepped_data.csv', function (error, allData) {
         // Track the sex (male, female) and drinking type (any, binge) in variables
         var sex = 'female';
         var type = 'binge';
 
-        // Filter data down
-        var data = allData.filter(function(d) {
-                return d.type == type && d.sex == sex
-            })
-            // Sort the data alphabetically
-            // Hint: http://stackoverflow.com/questions/6712034/sort-array-by-firstname-alphabetically-in-javascript
-            .sort(function(a, b) {
-                if (a.state_name < b.state_name) return -1;
-                if (a.state_name > b.state_name) return 1;
-                return 0;
-            });
+        //put into resuable code
+        // var sexArray = [];
+        // var typeArray = [];
+
+
+        // // Filter data down
+        // var data = allData.filter(function (d) {
+        //     sexArray.push(d.sex); // current sex
+        //     typeArray.push(d.type); // current type
+        //     return d.type == type && d.sex == sex
+        // })
+        //     // Sort the data alphabetically
+        //     // Hint: http://stackoverflow.com/questions/6712034/sort-array-by-firstname-alphabetically-in-javascript
+        //     .sort(function (a, b) {
+        //         if (a.state_name < b.state_name) return -1;
+        //         if (a.state_name > b.state_name) return 1;
+        //         return 0;
+        //     });
+
+        // console.log(sexArray);
+        // console.log(typeArray);
+
 
         // Margin: how much space to put in the SVG for axes/titles
         var margin = {
@@ -81,7 +92,7 @@ $(function() {
 
 
         // Get the unique values of states for the domain of your x scale
-        var states = data.map(function(d) {
+        var states = data.map(function (d) {
             return d.state;
         });
 
@@ -91,11 +102,11 @@ $(function() {
             .domain(states);
 
         // Get min/max values of the percent data (for your yScale domain)
-        var yMin = d3.min(data, function(d) {
+        var yMin = d3.min(data, function (d) {
             return +d.percent;
         });
 
-        var yMax = d3.max(data, function(d) {
+        var yMax = d3.max(data, function (d) {
             return +d.percent;
         });
 
@@ -119,12 +130,26 @@ $(function() {
         xAxisText.text('State');
         yAxisText.text('Percent Drinking (' + sex + ', ' + type + ')');
 
+        var filterData = function () {
+                var currentData = allData.filter(function (d) {
+                    return d.type == type && d.sex == sex
+                })
+                    // Sort the data alphabetically
+                    // Hint: http://stackoverflow.com/questions/6712034/sort-array-by-firstname-alphabetically-in-javascript
+                    .sort(function (a, b) {
+                        if (a.state_name < b.state_name) return -1;
+                        if (a.state_name > b.state_name) return 1;
+                        return 0;
+                    });
+        }
+
 
         // Add tip
-        var tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
+        var tip = d3.tip().attr('class', 'd3-tip').html(function (d) {
             return d.state_name;
         });
         g.call(tip);
+
 
         // Store the data-join in a function: make sure to set the scales and update the axes in your function.
         // Select all rects and bind data
@@ -132,18 +157,42 @@ $(function() {
 
         // Use the .enter() method to get your entering elements, and assign initial positions
         bars.enter().append('rect')
-            .attr('x', function(d) {
+            .attr('x', function (d) {
                 return xScale(d.state);
             })
+            .attr('y',function (d) {
+                return drawHeight;
+            })
+            .attr('heigt', 0)
             .attr('class', 'bar')
             .on('mouseover', tip.show)
             .on('mouseout', tip.hide)
             .attr('width', xScale.bandwidth())
-            .attr('y', function(d) {
+            .merge(bars)
+            .attr('y', function (d) {
                 return yScale(d.percent);
             })
-            .attr('height', function(d) {
+            .attr('height', function (d) {
                 return drawHeight - yScale(d.percent);
             });
-    });
+
+        // //** Update data section (Called from the onclick)
+        // function updateData() {
+
+        //     // Select the section we want to apply our changes to
+        //     var svg = d3.select("body").transition();
+
+        //     // Make the changes
+        //     svg.select(".bar")   // change the line
+        //         .duration(750)
+        //     //.attr("d", valueline(data));
+        // });
+
+
+
+
+});
+
+
+
 });
